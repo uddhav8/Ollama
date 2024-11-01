@@ -28,7 +28,8 @@ system_template = "Translate the following into {language}:" # language will be 
 
 # The messages to send to the LLM.
 prompt_template = ChatPromptTemplate.from_messages(
-    [("system", system_template), ("user", "{text}")]
+    [("system", system_template), 
+     ("user", "{text}")]
 )
 
 # Define Output Parser
