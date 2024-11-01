@@ -32,7 +32,7 @@ prompt_template = ChatPromptTemplate.from_messages(
 )
 
 result = prompt_template.invoke({"language": "Spanish", "text": "Hello! How are you?"})
-print(result)
+print(result.to_messages())
 
 '''
 # Define Output Parser
