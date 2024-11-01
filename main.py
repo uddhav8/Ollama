@@ -1,3 +1,5 @@
+# Create a prompt template and chain it together 
+
 from langchain_ollama import ChatOllama
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.output_parsers import StrOutputParser
@@ -24,22 +26,16 @@ model = ChatOllama(
 # Define the message template to provide to the llm.
 system_template = "Translate the following into {language}:" # language will be replaced by user input
 
+# The messages to send to the LLM.
 prompt_template = ChatPromptTemplate.from_messages(
-    [
-        ("system", system_template), 
-        ("user", "{text}")
-    ] # The messages to send to the LLM.
+    [("system", system_template), ("user", "{text}")]
 )
 
-result = prompt_template.invoke({"language": "Spanish", "text": "Hello! How are you?"})
-print(result.to_messages())
-
-'''
 # Define Output Parser
 parser = StrOutputParser()  # This parses the output of the LLM into a more human readable.
 
 # Chain the LLM and Parser to that every time this chain is called the model and parser will be called.
-chain = model | parser
+chain = prompt_template | model | parser    # What this says: Chain together in the order whenever calling Chain, first run prompt_template Then model Then parser 
 
 # print output in terminal
-print(chain.invoke(messages))'''
+print(chain.invoke({"language": "italian", "text": "Hello! How are you?"}))
