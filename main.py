@@ -18,7 +18,8 @@ messages = [
 # Define Output Parser
 parser = StrOutputParser()  # This parses the output of the LLM into a more human readable.
 
-# Generate Responses
-result = model.invoke(messages) # LLM Output is stored in the result variable.
+# Chain the LLM and Parser to that every time this chain is called the model and parser will be called.
+chain = model | parser
 
-print(parser.invoke(result))
+# print output in terminal
+print(chain.invoke(messages))
