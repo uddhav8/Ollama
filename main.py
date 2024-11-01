@@ -4,7 +4,7 @@ from langchain_core.output_parsers import StrOutputParser
 
 # Define LLM Provider.
 model = ChatOllama(
-    model = "llama3.2:latest", # The model name and version to use for inference.
+    model = "llama3.2:latest",  # The model name and version to use for inference.
     base_url= "http://192.168.0.64:11434/", # The URL of the LLM.
     # other params ...
 )
@@ -15,4 +15,10 @@ messages = [
     HumanMessage(content="Hello! How are you?"),
 ]
 
-print(model.invoke(messages))
+# Define Output Parser
+parser = StrOutputParser()  # This parses the output of the LLM into a more human readable.
+
+# Generate Responses
+result = model.invoke(messages) # LLM Output is stored in the result variable.
+
+print(parser.invoke(result))
