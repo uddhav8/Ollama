@@ -39,3 +39,15 @@ query = "What's my name?"
 input_messages = [HumanMessage(query)]
 output = app.invoke({"messages": input_messages}, config)
 output["messages"][-1].pretty_print()
+
+config = {"configurable": {"thread_id": "abc234"}}
+
+input_messages = [HumanMessage(query)]
+output = app.invoke({"messages": input_messages}, config)
+output["messages"][-1].pretty_print()
+
+config = {"configurable": {"thread_id": "abc123"}}
+
+input_messages = [HumanMessage(query)]
+output = app.invoke({"messages": input_messages}, config)
+output["messages"][-1].pretty_print()
