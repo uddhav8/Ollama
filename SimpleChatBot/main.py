@@ -1,5 +1,6 @@
 from langchain_ollama import ChatOllama
 from langchain_core.messages import HumanMessage, AIMessage 
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, MessagesState, StateGraph
 
@@ -10,12 +11,23 @@ model = ChatOllama(
     # other params ...
 )
 
+prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            "You talk like a pirate. Answer all questions to the best of your ability.",
+        ),
+        MessagesPlaceholder(variable_name="messages"),
+    ]
+)
+
 # Define a new graph
 workflow = StateGraph(state_schema=MessagesState)
 
 # Define the function that calls the model
 def call_model(state: MessagesState):
-    response = model.invoke(state["messages"])
+    chain = prompt | model
+    response = chain.invoke(state)
     return {"messages": response}
 
 # Define the (single) node in the graph
@@ -39,7 +51,7 @@ query = "What's my name?"
 input_messages = [HumanMessage(query)]
 output = app.invoke({"messages": input_messages}, config)
 output["messages"][-1].pretty_print()
-
+'''
 config = {"configurable": {"thread_id": "abc234"}}
 
 input_messages = [HumanMessage(query)]
@@ -51,3 +63,4 @@ config = {"configurable": {"thread_id": "abc123"}}
 input_messages = [HumanMessage(query)]
 output = app.invoke({"messages": input_messages}, config)
 output["messages"][-1].pretty_print()
+'''
