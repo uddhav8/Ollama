@@ -4,20 +4,17 @@ from langchain_ollama import ChatOllama
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-'''
-LANGCHAIN_TRACING_V2=true
-LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
-LANGCHAIN_API_KEY="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"
-LANGCHAIN_PROJECT="pr-kindly-address-51"
-'''
-'''
-export LANGCHAIN_TRACING_V2="true"
-export LANGCHAIN_API_KEY="..."
-'''
+import getpass
+import os
+
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
+os.environ["LANGCHAIN_API_KEY"] = "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"
+os.environ["LANGCHAIN_PROJECT"] = "LangChain-SimpleLLMApp-Tutorial"
 
 # Define LLM Provider.
 model = ChatOllama(
-    model = "llama3.2:latest",  # The model name and version to use for inference.
+    model = "llama3.2:1b",  # The model name and version to use for inference.
     base_url= "http://192.168.0.64:11434/", # The URL of the LLM.
     # other params ...
 )
@@ -27,8 +24,10 @@ system_template = "Translate the following into {language}:" # language will be 
 
 # The messages to send to the LLM.
 prompt_template = ChatPromptTemplate.from_messages(
-    [("system", system_template), 
-     ("user", "{text}")]
+    [
+        ("system", system_template), 
+        ("user", "{text}")
+    ]
 )
 
 # Define Output Parser
