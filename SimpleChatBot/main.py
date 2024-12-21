@@ -6,9 +6,9 @@ from typing_extensions import Annotated, TypedDict
 from langchain_ollama import ChatOllama
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, BaseMessage, trim_messages
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, MessagesState, StateGraph
 from langgraph.graph.message import add_messages
+from langgraph.checkpoint.memory import MemorySaver
 
 # Connection LangSmith Tracings
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
@@ -21,6 +21,16 @@ model = ChatOllama(
     model = "llama3.2:1b",  # The model name and version to use for inference.
     base_url= "http://192.168.0.64:11434/", # The URL of the LLM.
     # other params ...
+)
+
+# Define the trimmer for conversation history
+trimmer = trim_messages(
+    max_tokens=65, # Adjust token limit based on your model's context window
+    strategy="last",
+    token_counter=model,
+    include_system=True,
+    allow_partial=False,
+    start_on="human",
 )
 
  # Define Prompt Template.
@@ -45,11 +55,29 @@ class State(TypedDict):
 # A Graph is like a whiteboard. 
 # A Schema is like a sticky note template that can be stuck on the whiteboard.
 workflow = StateGraph(state_schema=State)
-#workflow = StateGraph(state_schema=MessagesState)
+
+initial_messages = [
+    SystemMessage(content="you're a good assistant"),
+    HumanMessage(content="hi! I'm bob"),
+    AIMessage(content="hi!"),
+    HumanMessage(content="I like vanilla ice cream"),
+    AIMessage(content="nice"),
+    HumanMessage(content="whats 2 + 2"),
+    AIMessage(content="4"),
+    HumanMessage(content="thanks"),
+    AIMessage(content="no problem!"),
+    HumanMessage(content="having fun?"),
+    AIMessage(content="yes!"),
+]
 
 # Define the function that calls the model
 def call_model(state: State):
-    prompt = prompt_template.invoke(state)
+    # Trim messages to fit within context window
+    trimmed_messages = trimmer.invoke(state["messages"])
+    # Build the prompt with the trimmed messages
+    prompt = prompt_template.invoke(
+        {"messages": trimmed_messages, "language": state["language"]}
+    )
     response = model.invoke(prompt)
     return {"messages": [response]}
 
@@ -105,7 +133,7 @@ query = "What is my name?"
 input_messages = [HumanMessage(query)]
 output = app.invoke({"messages": input_messages}, config)
 output["messages"][-1].pretty_print()
-'''
+
 config = {"configurable": {"thread_id": "abc456"}}
 
 query = "Hi! I'm Bob."
@@ -121,27 +149,27 @@ query = "What is my name?"
 input_messages = [HumanMessage(query)]
 output = app.invoke({"messages": input_messages}, config,)
 output["messages"][-1].pretty_print()
-
-'''config = {"configurable": {"thread_id": "abc567"}}
+'''
+config = {"configurable": {"thread_id": "abc567"}}
 
 query = "What is my name?"
 
 language = "English"
 
-input_messages = messages + [HumanMessage(query)]
+input_messages = initial_messages + [HumanMessage(query)]
 output = app.invoke(
     {"messages": input_messages, "language": language},
     config,
 )
-output["messages"][-1].pretty_print()'''
+output["messages"][-1].pretty_print()
 
-'''config = {"configurable": {"thread_id": "abc678"}}
+config = {"configurable": {"thread_id": "abc678"}}
 query = "What math problem did I ask?"
 language = "English"
 
-input_messages = messages + [HumanMessage(query)]
+input_messages = initial_messages + [HumanMessage(query)]
 output = app.invoke(
     {"messages": input_messages, "language": language},
     config,
 )
-output["messages"][-1].pretty_print()'''
+output["messages"][-1].pretty_print()
